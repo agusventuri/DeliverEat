@@ -1,0 +1,374 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <!--Responsive to device size-->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap library -->
+  <link href="css/bootstrap.min.css" rel="stylesheet" />
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- Popper JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <!-- JavaScript library -->
+  <script src="js/bootstrap.min.js"></script>
+  <!-- Propper Style Sheet-->
+  <link href="css/style.css" rel="stylesheet" />
+  <!-- AngularJS  -->
+  <script src="js/angular.min.js"></script>
+  <!-- App Script (Angular controllers) -->
+  <script src="js/app.js"></script>
+  <!-- Credit Card Validation -->
+  <script src="js/jquery.payform.min.js"></script>
+  <script src="js/script.js"></script>
+
+  <title>DeliverEat:Pedido</title>
+
+</head>
+<body ng-app="myApp" ng-controller="main">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top">
+    <!-- Brand -->
+    <img src="images/DeliverEat.jpg" alt="Logo" style="width:40px; height:40px">
+    <a class="navbar-brand" href="#">DeliverEat</a>
+
+    <!-- Toggler/collapsibe Button -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar links -->
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Mi Cuenta</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Salir</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <!-- Paginas de la SPA -->
+  <!-- Descripcion Pedido-->
+  <div class="container-fluid" ng-controller="index" ng-show="estadopedido">
+    <div class="row" style="padding-top:60px">
+      <div class="col-sm-8">
+        <h5>Pedido de "lo que sea"</h5>
+        <form name="formpedido">
+          <!-- Input Descripcion-->
+          <h5>Descripcion:*</h5>
+          <div class="form-row">
+            <textarea type="text" class="form-control" name="inputdescripcion" ng-model="inputdescripcion" ng-required="true" maxlength="200" rows="5" placeholder="Descripcion"></textarea>
+            <span ng-show="formpedido.$dirty">
+              <span ng-show="formpedido.inputdescripcion.$error.required">La descripcion es requerida.</span>
+            </span>
+          </div>
+          <!-- Input Imagen -->
+          <div class="form-row">
+            <h5>Imagen(Opcional):</h5>
+            <!-- IMAGE UPLOADER -->
+            <div class="col-sm-6">
+              <div class="form-group">
+                <div class="input-group">
+                  <span class="input-group-btn">
+                    <span class="btn btn-secondary btn-file">
+                      Buscar… <input type="file" id="imgInp">
+                    </span>
+                  </span>
+                  <input type="text" class="form-control" readonly>
+                </div>
+                <img id='img-upload' />
+              </div>
+            </div>
+          </div>
+          <!-- Input Recepcion "Lo antes posible" -->
+          <h5>Recepcion:*</h5>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="loantesposible" ng-model="inputloantesposible" ng-click="marcar()" ng-required="loantesposiblerequerido" />
+            <label class="form-check-label" for="loantesposible">
+              Recibir lo antes posible
+            </label>
+          </div>
+          <!-- Input Fecha -->
+          <div class="form-row">
+            <div class="col-sm-1">
+              <label>Fecha de Recepcion:</label>
+              <input type="date" class="form-control" name="inputfecha" ng-model="inputfecha" ng-disabled="estadoinputsfecha" ng-required="fecharequerido" required min="{{currentDate | date:'yyyy-MM-dd'}}" placeholder="Fecha de Envio">
+              <span ng-show="formpedido.$dirty && formpedido.inputfecha.$invalid">
+                <span ng-show="formpedido.inputfecha.$error.required">La fecha de recepcion es requerida</span>
+                <span ng-show="formpedido.inputfecha.$error.min">La fecha no deberia ser anterior a la actual</span>
+              </span>
+              <!-- Input Hora -->
+              <label>Hora de Recepcion:</label>
+              <input type="time" class="form-control" name="inputhora" ng-model="inputhora" ng-disabled="estadoinputsfecha" ng-required="fecharequerido" placeholder="Hora de Envio">
+              <span ng-show="formpedido.$dirty && formpedido.inputfecha.$invalid">
+                <span ng-show="formpedido.inputhora.$error.required">La hora de recepcion es requerida</span>
+              </span>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Boton Siguiente -->
+    <div class="row" style="padding-top:10px">
+      <div class="col-sm-8">
+        <input type="submit" class="btn btn-primary float-right" name="siguientepedido" ng-model="siguientepedido" href="#" ng-click="mostrardireccion()" ng-disabled="formpedido.$invalid" value="Siguiente">
+      </div>
+    </div>
+  </div>
+  <!-- Direccion Pedido -->
+  <div class="container-fluid" ng-controller="direccion" ng-show="estadodireccion">
+    <form name="formdireccion">
+      <!-- DIRECCION COMERCIO -->
+      <div class="row">
+        <div class="col-sm-8">
+          <h5> Direccion de Comercio: </h5>
+          <!-- MENU -->
+          <div class="row" style="padding-bottom:10px; padding-top:30px">
+            <div class="col-sm-8 align-content-center">
+              <h5>Direccion de comercio:</h5>
+              <a class="btn btn-primary" href="#" ng-click="showmaps()">Google Maps</a>
+              <a class="btn btn-info" href="#" ng-click="showdireccion()">Direccion Manual</a>
+            </div>
+          </div>
+          <!-- GOOGLE MAPS -->
+          <div class="row" ng-show="shmaps">
+            <div class="col-sm-8">
+              <h5>Seleccione direccion en el mapa:</h5>
+              <style>
+                /* Set the size of the div element that contains the map */
+                #map {
+                  height: 400px; /* The height is 400 pixels */
+                  width: 100%; /* The width is the width of the web page */
+                }
+              </style>
+              <!--The div element for the map -->
+              <div id="map"></div>
+              <script>
+                // Initialize and add the map
+                function initMap() {
+                  var miMarcador = new google.maps.LatLng(-31.4286287, -64.1848189);
+                  var mapOptions = {
+                    zoom: 12,
+                    center: miMarcador
+                  }
+                  var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+                  // Place a draggable marker on the map
+                  var marker = new google.maps.Marker({
+                    position: miMarcador,
+                    map: map,
+                    draggable: true,
+                    title: "Arrastrame!"
+                  });
+                }
+
+              </script>
+              <!--Load the API from the specified URL
+              * The async attribute allows the browser to render the page while the API loads
+              * The key parameter will contain your own API key (which is not needed for this tutorial)
+              * The callback parameter executes the initMap() function
+              -->
+              <script async defer
+                      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBN3hl8CILMQex6Sv2xo0rxrhetOd1Zcs8
+&callback=initMap">
+              </script>
+            </div>
+          </div>
+          <!-- Input Direccion Envio -->
+          <!-- Input Ciudad Envio -->
+          <div class="form-row" ng-show="shdireccion">
+            <div class="form-group col-sm-4">
+              <label>Ciudad:*</label>
+              <input type="text" name="inputciudad" class="form-control" ng-model="inputciudad" maxlength="30" placeholder="Ciudad" ng-required="direccionenviorequerido">
+              <span ng-show="formdireccion.$dirty && formdireccion.inputciudad.$invalid">La ciudad es requerida.</span>
+            </div>
+            <!-- Input Calle Envio -->
+            <div class="form-group col-sm-5">
+              <label>Calle:*</label>
+              <input type="text" name="inputcalle" class="form-control" ng-model="inputcalle" maxlength="30" placeholder="Calle" ng-required="direccionenviorequerido">
+              <span ng-show="formdireccion.$dirty && formdireccion.inputcalle.$invalid">La calle es requerida.</span>
+            </div>
+            <!-- Input Numero Calle Envio -->
+            <div class="form-group col-sm-3">
+              <label>Numero:*</label>
+              <input type="number" name="inputnumero" class="form-control" ng-model="inputnumero" placeholder="Numero" ng-required="direccionenviorequerido" maxlength="4" min="1">
+              <span ng-show="formdireccion.$dirty && formdireccion.inputnumero.$invalid">El numero de la calle es requerido.</span>
+            </div>
+          </div>
+          <!-- Input Descripcion -->
+          <div class="form-row">
+            <div class="form-group col-sm-10">
+              <label>Descripcion(Opcional):</label>
+              <input type="text" class="form-control" maxlength="200" ng-model="inputdescripcion" placeholder="Descripcion">
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- DIRECCION ENVIO -->
+      <div class="row">
+        <div class="col-sm-8">
+          <!-- Input Ciudad de Envio -->
+          <h5> Direccion de Envio:*</h5>
+          <div class="form-row">
+            <div class="form-group col-sm-4">
+              <label>Ciudad:*</label>
+              <select name="inputciudadenvio" ng-model="inputciudadenvio" ng-required="true" class="form-control">
+                <option selected>Cordoba</option>
+                <option>Rio Cuarto</option>
+                <option>San Francisco</option>
+                <option>Rio Tercero</option>
+                <option>Rio Primero</option>
+                <option>La Falda</option>
+              </select>
+              <span ng-show="formdireccion.$dirty && formdireccion.inputciduadenvio.$invalid">La ciudad de envio es requerida.</span>
+            </div>
+            <!-- Input Calle de Envio -->
+            <div class="form-group col-sm-5">
+              <label>Calle:*</label>
+              <input type="text" class="form-control" name="inputcalleenvio" ng-model="inputcalleenvio" placeholder="Calle" ng-required="true" maxlength="30">
+              <span ng-show="formdireccion.$dirty && formdireccion.inputcalleenvio.$invalid">La calle de envio es requerida.</span>
+            </div>
+            <!-- Input Numero de Calle de Envio -->
+            <div class="form-group col-sm-3">
+              <label>Numero:*</label>
+              <input type="number" class="form-control" name="inputnumeroenvio" ng-model="inputnumeroenvio" placeholder="Numero" ng-required="true" maxlength="4" min="1">
+              <span ng-show="formdireccion.$dirty && formdireccion.inputnumeroenvio.$invalid">El numero de la calle es requerido.</span>
+            </div>
+          </div>
+          <!-- Input Descripcion de Direccion de Envio -->
+          <div class="form-row">
+            <div class="form-group col-sm-10">
+              <label>Descripcion(Opcional):</label>
+              <input type="text" class="form-control" maxlength="200" ng-model="inputdescripcionenvio" placeholder="Descripcion">
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <div class="row" style="padding-top:20px ; padding-bottom:20px">
+
+      <div class="col-sm-8">
+        <a class="btn btn-primary" href="#" ng-click="mostrarpedido()">Atras</a>
+        <input type="submit" class="btn btn-primary float-right" href="#" ng-click="mostrarpago()" ng-disabled="formdireccion.$invalid" value="Siguiente">
+      </div>
+    </div>
+  </div>
+  <!-- Pago Pedido -->
+  <div class="container-fluid" ng-controller="pago" ng-show="estadopago">
+    <!-- MENU METODO PAGO-->
+    <div class="row" style="padding-top:60px">
+      <div class="col-sm-4">
+        <h4>Seleccione metodo de pago:</h4>
+        <button class="btn btn-primary" ng-click="showcredito()">Tarjeta de Credito</button>
+        <button class="btn btn-primary" ng-click="showefectivo()">Efectivo</button>
+      </div>
+    </div>
+    <!-- PAGO CON TARJETA  -->
+    <div class="row" ng-show="shcredito">
+      <!-- Script Validador de Tarjetas de Credito-->
+      <div class="creditCardForm col-sm-4">
+        <div class="payment">
+          <div class="heading">
+            <h4>Pago con Tarjeta:</h4>
+          </div>
+          <form>
+            <div class="form-group owner">
+              <label for="owner">Titular:</label>
+              <input type="text" class="form-control" id="owner">
+            </div>
+            <div class="form-group CVV">
+              <label for="cvv">CVV</label>
+              <input type="text" class="form-control" id="cvv">
+            </div>
+            <div class="form-group" id="card-number-field">
+              <label for="cardNumber">Numero de Tarjeta</label>
+              <input type="text" class="form-control" id="cardNumber">
+            </div>
+            <div class="form-group" id="expiration-date">
+              <label>Fecha de Expiracion:</label>
+              <select>
+                <option value="01">Enero</option>
+                <option value="02">Febrero </option>
+                <option value="03">Marzo</option>
+                <option value="04">Abril</option>
+                <option value="05">Mayo</option>
+                <option value="06">Junio</option>
+                <option value="07">Julio</option>
+                <option value="08">Agosto</option>
+                <option value="09">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+              <select>
+                <option value="16"> 2016</option>
+                <option value="17"> 2017</option>
+                <option value="18"> 2018</option>
+                <option value="19"> 2019</option>
+                <option value="20"> 2020</option>
+                <option value="21"> 2021</option>
+                <option value="22"> 2022</option>
+                <option value="23"> 2023</option>
+                <option value="24"> 2024</option>
+                <option value="25"> 2025</option>
+              </select>
+            </div>
+            <div class="form-group" id="credit_cards">
+              <img src="images/visa.jpg" id="visa">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- PAGO EN EFECTIVO  -->
+    <div class="row" ng-show="shefectivo">
+      <div class="col-sm-4">
+        <h4>Pago con Efectivo:</h4>
+        <form name="formefectivo">
+          <label>Monto a Pagar:*</label>
+          <input type="number" class="form-control" ng-model="inputmonto" ng-required="efectivorequerido" placeholder="Monto" maxlength="6" min="0">
+          <span ng-show="formefectivo.$dirty && formefectivo.inputmonto.$invalid"></span>
+        </form>
+      </div>
+    </div><br>
+    <div class="form-group" id="pay-now">
+      <button type="submit" class="btn btn-primary float-right" data-toggle="modal" data-target="#myModal" ng-show="shcredito" id="confirm-purchase">Confirmar</button>
+      <button type="submit" class="btn btn-primary float-right" data-toggle="modal" data-target="#myModal" ng-show="shefectivo" ng-disabled="formefectivo.$invalid">Confirmar</button>
+      <a class="btn btn-primary" href="" ng-click="mostrardireccion()">Atras</a>
+    </div>
+
+  </div>
+  <!-- Modal Pedido Confirmado -->
+  <div class="modal" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Pedido Confirmado</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          Su pedido ha sido confirmado satisfactoriamente..
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+<!-- Hoja de estilo HTML y CSS: https://google.github.io/styleguide/htmlcssguide.html -->
+<!-- Hoja de estilo AngularJS: https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md -->
+</html>
